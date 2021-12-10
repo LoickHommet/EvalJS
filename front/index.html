@@ -142,7 +142,7 @@
                         const data = {
                             id: id,
                             name: form.name.value,
-                            montant: form.montant.valueAsNumber,
+                            montant: form.montant.value
                         }
                         const options = { method: "PUT", body: JSON.stringify(data), headers: { 'Content-Type': 'application/json' } }
                         await fetch("http://localhost:4221/depense/" + id, options)
