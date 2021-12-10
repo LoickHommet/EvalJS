@@ -72,7 +72,7 @@
             let n = document.querySelector("#negatif");
             for (const p in depence) {
                 tr.innerHTML += `<form class=" d-flex my-3">
-                                        <td name="id"> <input type="text" name="id" class="form-input" value="${depence[p].id}"></td>
+                                        <td name="id"> <input type="text" name="id" class="form-input" value="${depence[p].id}" disabled></td>
                                         <td name="name"><input type="text" name="name" class="form-input" value="${depence[p].name}"></td>
                                         <td><input type="text" name="montant" class="form-input" value="${depence[p].montant}"></td>
                                         <td> <input type="submit" class="btn btn-primary mx-3" value="modifier"></td>
