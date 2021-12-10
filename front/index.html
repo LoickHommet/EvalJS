@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css">
+    <title>Document</title>
+</head>
+
+<body>
+    <div class="container">
+        <header class="row">
+            <h1 class="col-12 text-center">Total </h1>
+            <span class="js-compteur text-center"></span>
+            <hr>
+            <h1 class="col-6 text-center " >Dépence <br>
+                <p style="font-size: 12px;" id="positif"></p>
+            </h1>
+
+            <h1 class="col-6 text-center">Recettes <p style="font-size: 12px;" id="negatif"></p>
+            </h1>
+            <hr>
+        </header>
+        <section class="row">
+            <h2>Details: </h2>
+            <div class="js-list-tache">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th scope="col">id</th>
+                            <th scope="col">nom</th>
+                            <th scope="col">montant</th>
+                            <th scope="col">action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="js-list-tache">
+
+                        </tr>
+                    </tbody>
+                </table>
+
+            </div>
+        </section>
+        <hr>
+        <section class="row">
+            <h2>Ajouter une nouvelle dépence</h2>
+            <form class="d-flex js-form-add">
+                <input type="text" name="name" class="form-input" style="flex-grow:1" placeholder="nom">
+                <input type="number" name="montant" class="form-input" style="flex-grow:1" placeholder="montant">
+                <button class="btn btn-success ms-4">
+                    Envoyer
+                </button>
+            </form>
+        </section>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/joi@17.5.0/dist/joi-browser.min.js"></script>
+    <script>
+        // list
+
+        async function getDepenceList() {
+            return await fetch(' http://localhost:4221/depense').then(response => response.json()).then(data => data);
+        }
+        async function displayInfo() {
+            let depence = await getDepenceList();
+            let tr = document.querySelector('.js-list-tache');
+            let p = document.querySelector("#positif");
+            let n = document.querySelector("#negatif");
+            for (const p in depence) {
+                tr.innerHTML += `<form class=" d-flex my-3">
+                                        <td name="id"> <input type="text" name="id" class="form-input" value="${depence[p].id}"></td>
+                                        <td name="name"><input type="text" name="name" class="form-input" value="${depence[p].name}"></td>
+                                        <td><input type="text" name="montant" class="form-input" value="${depence[p].montant}"></td>
+                                        <td> <input type="submit" class="btn btn-primary mx-3" value="modifier"></td>
+                                        <td><input type="submit" class="btn btn-danger" value="supprimer"></td>
+                                    </form> `;
+
+                tr.innerHTML += `<hr/>`;
+                if (depence[p].montant > 0)
+                {
+                    let depenceP =+ depence[p].montant;
+                    p.innerHTML += depenceP;
+                }else{
+                    let depenceN =+ depence[p].montant;
+                }
+                
+            }
+        }
+        displayInfo();
+       
+       
+    </script>
+    <script>
+        // ajouter
+        const schemaTache = joi.object({
+            name: joi.string().min(3).max(100).required(),
+            montant: joi.number().required()
+        })
+
+        document.querySelector(".js-form-add").addEventListener("submit", async function (e) {
+            e.preventDefault();
+            const dataForm = {
+                name: e.target.name.value,
+                montant: e.target.montant.valueAsNumber
+            }
+
+            let { value, error } = schemaTache.validate(dataForm, { abortEarly: false })
+            value.status = true;
+            if (error) return console.log(error.details)
+
+            const reponse = await fetch("http://localhost:4221/depense", {
+                method: "POST",
+                body: JSON.stringify(value),
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+            console.log(reponse);
+        })
+    </script>
+
+    <script>
+        window.addEventListener("DOMContentLoaded", async () => {
+
+            const reponse = await fetch("http://localhost:4221/depense")
+            const depence = await reponse.json();
+
+            
+
+            // gestion du nombre de tâches en cours 
+            document.querySelector(".js-list-tache").addEventListener("click", async e => {
+                e.preventDefault();
+                if (e.target.className.includes("btn")) {
+                    const form = e.target.parentNode;
+                    const action = e.target.value;
+                    const id = form.id.value
+                    if (action == "modifier") {
+                        const data = {
+                            id: id,
+                            name: form.name.value,
+                            montant: form.montant.valueAsNumber,
+                        }
+                        const options = { method: "PUT", body: JSON.stringify(data), headers: { 'Content-Type': 'application/json' } }
+                        await fetch("http://localhost:4221/depense/" + id, options)
+                    } else if (action == "supprimer") {
+                        const options = { method: "DELETE" }
+                        await fetch("http://localhost:4221/depense/" + id, options);
+                    }
+                }
+            })
+        })
+    </script>
+
+</body>
+
+</html>
